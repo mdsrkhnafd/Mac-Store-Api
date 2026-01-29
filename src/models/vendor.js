@@ -19,6 +19,9 @@ const vendorSchema = mongoose.Schema({
   city: { type: String, default: "" },
   locality: { type: String, default: "" },
   role: { type: String, default: "vendor" },
+  storeName: { type: String, default: "", trim: true },
+  storeImage: { type: String, default: "" },
+  storeDescription: { type: String, default: "", trim: true },
   password: {
     type: String,
     required: true,

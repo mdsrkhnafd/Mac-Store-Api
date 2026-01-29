@@ -1,4 +1,6 @@
+const mongoose = require("mongoose");
 const Product = require("../models/product.js");
+const Vendor = require("../models/vendor.js");
 
 const addProduct = async (req, res) => {
   try {
@@ -198,29 +200,64 @@ const searchProducts = async (req, res) => {
 const editProduct = async (req, res) => {
   try {
     const { productId } = req.params;
+
+    // ✅ MUST use findById
     const product = await Product.findById(productId);
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    if (product.vendorId !== req.user.id) {
+
+    // console.log("Vendor ID:", product.vendorId.toString());
+    // console.log("Product ID:", productId);
+    // console.log("Request User ID:", req.user.id);
+
+    // ✅ ObjectId → string comparison
+    if (product.vendorId.toString() !== req.user.id) {
       return res
         .status(403)
         .json({ message: "You are not authorized to edit this product" });
     }
-    // destructure the request body to exclude vendorId
+
+    // ❌ never allow vendorId update
     const { vendorId, ...productData } = req.body;
-    // update the product
+
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       { $set: productData },
       { new: true }
     );
+
     res.status(200).json({ updatedProduct });
   } catch (error) {
     console.error("Error editing product:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
+// method to fetch products by vendor id
+const fetchVendorProducts = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+
+    console.log("Vendor ID from URL:", vendorId);
+
+    const products = await Product.find({ vendorId });
+
+    console.log("Matched products:", products);
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: "No products found for vendor" });
+    }
+
+    res.status(200).json(products );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 module.exports = {
   addProduct,
@@ -231,5 +268,6 @@ module.exports = {
   getTopRatedProducts,
   productsBySubCategory,
   searchProducts,
+  fetchVendorProducts,
   editProduct,
 };

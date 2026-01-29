@@ -42,6 +42,11 @@ const userSchema = mongoose.Schema({
       message: "Password must be at least 6 characters long",
     },
   },
+
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const User = mongoose.model("User", userSchema);
