@@ -1,7 +1,7 @@
 [build]
-  command = "echo 'No build step'"
-  publish = "."                # Change this from "public" to "."
+  command = "npm install"
   functions = "netlify/functions"
+  publish = "public" # Create an empty folder named 'public' in your project root
 
 [functions]
   node_bundler = "esbuild"
@@ -10,3 +10,4 @@
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+  force = true # Ensures Netlify always uses the function for these paths
