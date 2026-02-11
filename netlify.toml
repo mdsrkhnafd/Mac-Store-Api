@@ -1,4 +1,6 @@
 [build]
+  command = ""       # Tells Netlify there is no build command
+  publish = "public"  # A dummy folder (create an empty folder named 'public' in your root)
   functions = "netlify/functions"
 
 [[redirects]]
