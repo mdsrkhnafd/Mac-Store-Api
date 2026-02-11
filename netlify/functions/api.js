@@ -6,8 +6,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 require("dotenv").config();
 
-// IMPORTANT: Update these paths to point to your actual routes folder
-// Since this file is in netlify/functions, we go up TWO levels (../../) to find src
+// Paths to your existing routes
 const userRouter = require("../../src/routes/user");
 const bannerRouter = require("../../src/routes/banner");
 const categoryRouter = require("../../src/routes/category");
@@ -18,7 +17,6 @@ const vendorRouter = require("../../src/routes/vendor");
 const orderRouter = require("../../src/routes/order");
 
 const app = express();
-const DB = process.env.DATABASE_URL;
 
 // Middleware
 app.use(express.json());
@@ -26,15 +24,13 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan("common"));
 
-// 1. Database Connection Logic (Serverless optimized)
+// Database Connection Logic
 let isConnected = false;
 const connectDB = async () => {
   if (isConnected) return;
   try {
-    await mongoose.connect(DB, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Using process.env directly ensures Netlify picks up the dashboard variable
+    await mongoose.connect(process.env.DATABASE_URL);
     isConnected = true;
     console.log("Connected to MongoDB");
   } catch (err) {
@@ -42,14 +38,14 @@ const connectDB = async () => {
   }
 };
 
-// 2. Define a Router
 const router = express.Router();
 
+// This matches the root URL
 router.get("/", (req, res) => {
-  res.send("Hello World! Netlify API is running...");
+  res.send("<h1>API is running</h1>");
 });
 
-// Attach your existing routes to this router
+// Attach your routers
 router.use(userRouter);
 router.use(bannerRouter);
 router.use(categoryRouter);
@@ -59,13 +55,14 @@ router.use(productReviewRouter);
 router.use(vendorRouter);
 router.use(orderRouter);
 
-// 3. IMPORTANT: Set the base path for Netlify Functions
-app.use("/.netlify/functions/api", router);
+// CRITICAL FIX: Mount at "/"
+// Since your routes (like userRouter) already start with "/api"
+app.use("/", router);
 
-// 4. Export the handler
 const handler = serverless(app);
+
 module.exports.handler = async (event, context) => {
-  // This allows the database connection to stay open for future requests
+  // Keeps the DB connection alive across multiple function calls
   context.callbackWaitsForEmptyEventLoop = false;
   await connectDB();
   return await handler(event, context);
