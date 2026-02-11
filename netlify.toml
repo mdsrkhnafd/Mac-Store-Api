@@ -1,6 +1,6 @@
 [build]
   command = "echo 'No build step'"
-  publish = "public"
+  publish = "."                # Change this from "public" to "."
   functions = "netlify/functions"
 
 [functions]
@@ -10,3 +10,4 @@
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+ 
