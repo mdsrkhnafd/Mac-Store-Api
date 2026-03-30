@@ -51,6 +51,7 @@ router.use(orderRouter);
 
 // Apply router with the base path Netlify expects
 app.use("/.netlify/functions/api", router);
+app.use("/", router); // add this for local dev
 
 // Export as serverless handler
 const handler = serverless(app);
@@ -59,3 +60,11 @@ module.exports.handler = async (event, context) => {
   await connectDB();
   return await handler(event, context);
 };
+
+// Local development server
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 3000;
+  connectDB().then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  });
+}
